@@ -1,0 +1,35 @@
+# The @argszero/dsh-git-config-env-guard bundle patch: mount and go.
+#
+# `scrubbedParentEnv()` (packages/subprocess/subprocess/src/index.ts) decides what a
+# child inherits by matching variable *names* against
+#
+#   SENSITIVE_ENV_PATTERN = /KEY|PASSWORD|SECRET|TOKEN/i          (:47)
+#
+# Git's command-line configuration is one channel spelled as several variables —
+# `GIT_CONFIG_COUNT` plus `GIT_CONFIG_KEY_<n>` / `GIT_CONFIG_VALUE_<n>` for
+# `0 <= n < COUNT`. Exactly one of those names contains "KEY". So the scrub deletes
+# the keys and keeps the counter, and the child starts in a state git refuses to
+# read. Measured with git 2.50.1 (Apple Git-155), each shape run as `git status`:
+#
+#   COUNT absent, stray VALUE_0                       exit 0
+#   COUNT=1, KEY_0 and VALUE_0                        exit 0
+#   COUNT=1, KEY_0 and empty VALUE_0                  exit 0
+#   COUNT=1, VALUE_0 only        ← the scrub's output exit 128  missing config key GIT_CONFIG_KEY_0
+#   COUNT=1, KEY_0 only                               exit 128  missing config value GIT_CONFIG_VALUE_0
+#   COUNT=2, index 0 only                             exit 128  missing config key GIT_CONFIG_KEY_1
+#   COUNT not a non-negative integer                  exit 128  bogus count in GIT_CONFIG_COUNT
+#   GIT_CONFIG_PARAMETERS only                        exit 0
+#
+# Every git child dies, not only the call that set the channel — and the error names
+# a variable the user never wrote. The repository already knows the shape: its own
+# test harness deletes the group whole before spawning git, with that exact error in
+# the comment (packages/boot/plugin-manager/tests/git-environment.ts), and
+# packages/experimental/worktree/src/process.ts clears GIT_CONFIG_COUNT the same way.
+#
+# This plugin applies that same repair at the last mile, for every spawn that goes
+# through `ctx.subprocess`: a channel git cannot read is removed whole, a channel
+# that reaches the child intact is left alone, and nothing else in the environment
+# changes. It is a repair, not a filter — and not the upstream fix, which is one line
+# in `scrubbedParentEnv()` and belongs to the core.
+plugins:
+  '@argszero/dsh-git-config-env-guard': {}

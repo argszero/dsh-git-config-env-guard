@@ -5,11 +5,13 @@ environment scrub, so a git child started by the agent stops dying before it rea
 any configuration at all.
 
 ```sh
-npm install @argszero/dsh-git-config-env-guard
+dsh plugin --profile <profile> add github:argszero/dsh-git-config-env-guard
 ```
 
-Or mount it as a bundle: the package ships `cordis.patch.yml`, so adding it to a
-profile mounts and enables it with no further configuration.
+This package is installed from its repository, not from npm. A bare `npm install`
+only places the files: a profile builds its layers from the bundles listed in its
+manifest, so `dsh plugin add` is the step that actually mounts it. The package
+ships `cordis.patch.yml`, so mounting enables it with no further configuration.
 
 ## The defect
 

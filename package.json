@@ -1,7 +1,7 @@
 {
   "name": "@argszero/dsh-git-config-env-guard",
-  "version": "0.1.1",
-  "description": "The subprocess environment scrub removes credential-shaped names, and `GIT_CONFIG_KEY_n` looks credential-shaped while `GIT_CONFIG_COUNT` and `GIT_CONFIG_VALUE_n` do not. A child therefore inherits Git's command-line-configuration counter without the key it counts, and every git child dies before it reads any configuration file (\"error: missing config key GIT_CONFIG_KEY_0\", exit 128) \u2014 measured on git 2.50.1. This plugin shadows `spawn`/`spawnTerminal` on the subprocess service instance and restores atomicity for that one channel: an orphaned group is dropped whole, an intact group passes through untouched, and nothing else in the environment changes. Zero runtime dependencies, fail-open, no build step.",
+  "version": "0.1.2",
+  "description": "The subprocess environment scrub removes credential-shaped names, and `GIT_CONFIG_KEY_n` looks credential-shaped while `GIT_CONFIG_COUNT` and `GIT_CONFIG_VALUE_n` do not. A child therefore inherits Git's command-line-configuration counter without the key it counts, and every git child dies before it reads any configuration file (\"error: missing config key GIT_CONFIG_KEY_0\", exit 128) — measured on git 2.50.1. This plugin shadows `spawn`/`spawnTerminal` on the subprocess service instance and restores atomicity for that one channel: an orphaned group is dropped whole, an intact group passes through untouched, and nothing else in the environment changes. Zero runtime dependencies, fail-open, no build step.",
   "publishConfig": {
     "access": "public"
   },

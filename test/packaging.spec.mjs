@@ -28,7 +28,14 @@ test('the shipped file list is the runtime and nothing else', () => {
 test('there are no runtime dependencies', () => {
   assert.equal(pkg.dependencies, undefined)
   assert.equal(pkg.optionalDependencies, undefined)
-  assert.deepEqual(Object.keys(pkg.peerDependencies), ['@deepseek-ai/cordis'])
+  assert.deepEqual(Object.keys(pkg.peerDependencies), ['@deepseek-ai/cordis', '@deepseek-ai/dsh-subprocess'])
+})
+
+test('the bundle overlay is a top-level array of loader patch entries', () => {
+  const patch = readFileSync(join(root, 'cordis.patch.yml'), 'utf8')
+  const body = patch.split('\n').filter((line) => line.trim() !== '' && !line.trim().startsWith('#'))
+  assert.equal(body[0], '- insert:', 'a `plugins:` mapping is not an overlay and is rejected on install')
+  assert.match(patch, new RegExp(`^      name: '${pkg.name.replaceAll('/', '\\/')}'$`, 'mu'))
 })
 
 test('the loader contract is exactly name, inject and apply', () => {

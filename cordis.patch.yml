@@ -31,5 +31,10 @@
 # that reaches the child intact is left alone, and nothing else in the environment
 # changes. It is a repair, not a filter — and not the upstream fix, which is one line
 # in `scrubbedParentEnv()` and belongs to the core.
-plugins:
-  '@argszero/dsh-git-config-env-guard': {}
+# The overlay is a top-level array of loader patch entries — the form
+# `dsh plugin add` validates. An id-less `insert` appends this mount to the
+# profile's entry list, so the plugin joins the stack without touching any
+# existing entry.
+- insert:
+    - id: git-config-env-guard
+      name: '@argszero/dsh-git-config-env-guard'

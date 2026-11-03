@@ -5,10 +5,10 @@ environment scrub, so a git child started by the agent stops dying before it rea
 any configuration at all.
 
 ```sh
-dsh plugin --profile <profile> add "github:argszero/dsh-git-config-env-guard#v0.1.3"
+dsh plugin --profile <profile> add "github:argszero/dsh-git-config-env-guard#v0.1.4"
 ```
 
-The `#v0.1.3` is part of the command, not decoration: without it the spec resolves to
+The `#v0.1.4` is part of the command, not decoration: without it the spec resolves to
 whatever the branch head happens to be on the day it runs, so two people following
 the same line get two different trees. The tag names one commit.
 

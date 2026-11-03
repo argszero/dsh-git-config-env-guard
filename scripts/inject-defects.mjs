@@ -142,7 +142,7 @@ const ARMS = [
   {
     name: 'plugin: judge with the bundled fallback instead of the shipped rule',
     file: 'lib/index.js',
-    find: 'scrubPredicate(SENSITIVE_ENV_PATTERN, DSH_ENV_PREFIX)',
+    find: 'scrubPredicate(CARRIED_SCRUB.pattern, CARRIED_SCRUB.prefix)',
     replace: 'scrubPredicate(undefined, undefined)',
   },
   {

@@ -5,6 +5,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 import plugin from '../lib/index.js'
+import { CARRIED_SCRUB, DSH_ENV_PREFIX_DEFAULT, SENSITIVE_ENV_PATTERN_SOURCE } from '../lib/scrub.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
@@ -63,4 +64,34 @@ test('the install line names the version the manifest declares, and that version
     assert.ok(pinned, `the install line names no tag: ${line.trim()}`)
     assert.equal(pinned[1], `v${pkg.version}`, `${pinned[1]} is not the version this tree declares (${pkg.version})`)
   }
+})
+
+test('the published entry imports no harness peer, so a profile can load it', () => {
+  // A profile resolves a plugin's dependencies from the plugin's own tree, and no
+  // harness package lives there. An entry that imports one throws ERR_MODULE_NOT_FOUND
+  // on load while `dsh plugin add` still exits 0 and shows the row — measured on the
+  // v0.1.3 tree, which named @deepseek-ai/dsh-subprocess at module scope.
+  const entry = readFileSync(join(root, 'lib/index.js'), 'utf8')
+  const imports = [...entry.matchAll(/^\s*import\s[^\n]*?from\s+'([^']+)'/gm)].map((m) => m[1])
+  const harness = imports.filter((spec) => spec.startsWith('@deepseek-ai/'))
+  assert.deepEqual(harness, [], `the entry imports harness packages at module scope: ${harness.join(', ')}`)
+
+  // Every module the entry actually loads must obey the same rule.
+  for (const relative of imports.filter((spec) => spec.startsWith('.'))) {
+    const source = readFileSync(join(root, relative.replace('./', 'lib/')), 'utf8')
+    const nested = [...source.matchAll(/^\s*import\s[^\n]*?from\s+'([^']+)'/gm)].map((m) => m[1])
+    assert.deepEqual(nested.filter((spec) => spec.startsWith('@deepseek-ai/')), [], `${relative} reaches a harness package`)
+  }
+})
+
+test('the carried scrub literals are the ones the shipped module defines, when it resolves', () => {
+  // The literals in lib/scrub.js are copies. This arm is what keeps a copy honest:
+  // where the real module is resolvable it must agree, and where it is not (which is
+  // every profile) the copy is all there is — so it is pinned to the head it was read at.
+  assert.equal(SENSITIVE_ENV_PATTERN_SOURCE, 'KEY|PASSWORD|SECRET|TOKEN')
+  assert.equal(DSH_ENV_PREFIX_DEFAULT, 'DSH_')
+  assert.equal(CARRIED_SCRUB.source, 'carried')
+  assert.ok(CARRIED_SCRUB.pattern instanceof RegExp)
+  assert.equal(CARRIED_SCRUB.pattern.source, SENSITIVE_ENV_PATTERN_SOURCE)
+  assert.equal(CARRIED_SCRUB.pattern.flags, 'i')
 })

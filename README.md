@@ -5,13 +5,18 @@ environment scrub, so a git child started by the agent stops dying before it rea
 any configuration at all.
 
 ```sh
-dsh plugin --profile <profile> add github:argszero/dsh-git-config-env-guard
+dsh plugin --profile <profile> add "github:argszero/dsh-git-config-env-guard#v0.1.3"
 ```
 
-This package is installed from its repository, not from npm. A bare `npm install`
-only places the files: a profile builds its layers from the bundles listed in its
-manifest, so `dsh plugin add` is the step that actually mounts it. The package
-ships `cordis.patch.yml`, so mounting enables it with no further configuration.
+The `#v0.1.3` is part of the command, not decoration: without it the spec resolves to
+whatever the branch head happens to be on the day it runs, so two people following
+the same line get two different trees. The tag names one commit.
+
+This package is installed from its repository, not from npm — it has never been
+published there, so `npm view` answers `E404`. A bare `npm install` only places the
+files: a profile builds its layers from the bundles listed in its manifest, so
+`dsh plugin add` is the step that actually mounts it. The package ships
+`cordis.patch.yml`, so mounting enables it with no further configuration.
 
 ## The defect
 

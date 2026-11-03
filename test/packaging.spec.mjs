@@ -50,3 +50,17 @@ test('nothing in the published entry reaches for a built-in the sandbox would re
     assert.equal(/require\(/.test(source), false, `${file} uses require`)
   }
 })
+
+test('the install line names the version the manifest declares, and that version is a git tag', () => {
+  const readme = readFileSync(join(root, 'README.md'), 'utf8')
+  const lines = readme.split('\n').filter((line) => line.includes('dsh plugin') && line.includes('add '))
+  assert.ok(lines.length > 0, 'the README carries no install command at all')
+
+  for (const line of lines) {
+    // A spec without a ref resolves to whatever the branch head is on the day it
+    // runs, so two readers following one page get two different trees.
+    const pinned = /github:argszero\/dsh-git-config-env-guard#(v\d+\.\d+\.\d+)/.exec(line)
+    assert.ok(pinned, `the install line names no tag: ${line.trim()}`)
+    assert.equal(pinned[1], `v${pkg.version}`, `${pinned[1]} is not the version this tree declares (${pkg.version})`)
+  }
+})
